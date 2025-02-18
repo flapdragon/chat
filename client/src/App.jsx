@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router"
 import { socket } from "./socket"
 import PrivateRoute from "./PrivateRoute"
 import { ConnectionState } from "./ConnectionState"
+import Navbar from "./Navbar"
 import Home from "./Home"
 import Rooms from "./Rooms"
 import Dashboard from "./Dashboard"
@@ -13,6 +14,7 @@ import "./App.css"
 function App() {
   const [ isConnected, setIsConnected ] = useState(socket.connected)
   const [ fooEvents, setFooEvents ] = useState([])
+  const [ users, setUsers ] = useState([])
 
   useEffect(() => {
     function onConnect() {
@@ -27,21 +29,29 @@ function App() {
       setFooEvents(previous => [ ...previous, value ])
     }
 
+    function onGetOnlineUsers(userList) {
+      console.log("onGetOnlineUsers")
+      setUsers(userList)
+    }
+
     socket.on("connect", onConnect)
     socket.on("disconnect", onDisconnect)
     socket.on("foo", onFooEvent)
+    socket.on("getOnlineUsers", onGetOnlineUsers)
 
     return () => {
       socket.off("connect", onConnect)
       socket.off("disconnect", onDisconnect)
       socket.off("foo", onFooEvent)
+      socket.off("getOnlineUsers", onGetOnlineUsers)
     }
   }, [])
   
 
   return (
     <>
-      <ConnectionState isConnected={ isConnected } />
+      {/* <ConnectionState isConnected={ isConnected } /> */}
+      <Navbar users={users} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/rooms" element={<Rooms events={fooEvents} />} />
